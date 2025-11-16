@@ -1,93 +1,87 @@
-/* ===== إعداد Cloudinary ===== */
-const CLOUD_NAME = "dywcw157a";
+const CLOUD_NAME = "intravvel_uploads";
 const UPLOAD_PRESET = "bv0t5ao0";
-const FOLDER_NAME = "intravvel_uploads";
 
-/* رفع ملف واحد إلى Cloudinary */
-async function uploadToCloudinary(file) {
+async function upload(file) {
     const url = `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/upload`;
+    let fd = new FormData();
+    fd.append("file", file);
+    fd.append("upload_preset", UPLOAD_PRESET);
 
-    const formData = new FormData();
-    formData.append("file", file);
-    formData.append("upload_preset", UPLOAD_PRESET);
-    formData.append("folder", FOLDER_NAME);
-
-    const res = await fetch(url, { method: "POST", body: formData });
-    const data = await res.json();
-
-    if (!data.secure_url) {
-        alert("خطأ أثناء رفع الملف. حاول مرة أخرى.");
-        throw new Error("Upload failed");
-    }
-
+    let res = await fetch(url, { method:"POST", body:fd });
+    let data = await res.json();
     return data.secure_url;
 }
 
-/* ===== التحكم في خطوات النموذج ===== */
-document.addEventListener("DOMContentLoaded", () => {
+function go(step) {
+    document.querySelectorAll(".form-step").forEach(s=>s.classList.remove("active"));
+    document.querySelector(`[data-step="${step}"]`).classList.add("active");
+}
 
-    const steps = document.querySelectorAll(".form-step");
-    let currentStep = 0;
+document.getElementById("next1").onclick = () => {
+    if (!fullName.value || !phone.value || !email.value || !country.value || !service.value) {
+        alert("يرجى تعبئة جميع البيانات");
+        return;
+    }
+    go(2);
+};
 
-    function showStep(step) {
-        steps.forEach((s, i) => {
-            s.style.display = i === step ? "block" : "none";
-        });
-        currentStep = step;
-        window.scrollTo({ top: 0, behavior: "smooth" });
+document.getElementById("back1").onclick = () => go(1);
+
+document.getElementById("next2").onclick = async () => {
+    if (!personalPic.files[0] || !passport.files[0] || !residency.files[0]) {
+        alert("يرجى رفع جميع المستندات المطلوبة");
+        return;
     }
 
-    showStep(0); // خطوة البداية
+    go(3);
 
-    /* زر التالي */
-    document.querySelectorAll(".next-btn").forEach((btn, index) => {
-        btn.addEventListener("click", async (e) => {
-            e.preventDefault();
+    // رفع المستندات Cloudinary
+    let picURL = await upload(personalPic.files[0]);
+    let passURL = await upload(passport.files[0]);
+    let resURL = await upload(residency.files[0]);
 
-            // تحقق من الحقول المطلوبة
-            let inputs = steps[currentStep].querySelectorAll("input[required], select[required]");
-            for (let input of inputs) {
-                if (!input.value.trim()) {
-                    alert("يرجى تعبئة جميع الحقول المطلوبة");
-                    return;
-                }
-            }
+    window.formUploads = { picURL, passURL, resURL };
 
-            // خطوة رفع الملفات
-            if (steps[currentStep].dataset.step === "2") {
+    reviewBox.innerHTML = `
+        <p><strong>الاسم:</strong> ${fullName.value}</p>
+        <p><strong>رقم الهاتف:</strong> ${phone.value}</p>
+        <p><strong>الإيميل:</strong> ${email.value}</p>
+        <p><strong>الدولة:</strong> ${country.value}</p>
+        <p><strong>الخدمة:</strong> ${service.value}</p>
+        <p style='margin-top:10px;'><strong>الصور:</strong></p>
+        <a href="${picURL}" target="_blank">الصورة الشخصية</a><br>
+        <a href="${passURL}" target="_blank">جواز السفر</a><br>
+        <a href="${resURL}" target="_blank">الإقامة</a>
+    `;
+};
 
-                const fileInputs = steps[currentStep].querySelectorAll("input[type='file']");
-                btn.innerText = "جاري الرفع...";
-                btn.disabled = true;
+document.getElementById("back2").onclick = () => go(2);
 
-                for (let inp of fileInputs) {
-                    if (inp.files.length > 0) {
-                        const file = inp.files[0];
-                        const url = await uploadToCloudinary(file);
+applyForm.onsubmit = async (e) => {
+    e.preventDefault();
 
-                        // حقل مخفي لحفظ الرابط
-                        const hidden = document.createElement("input");
-                        hidden.type = "hidden";
-                        hidden.name = inp.name + "_link";
-                        hidden.value = url;
-                        inp.parentNode.appendChild(hidden);
-                    }
-                }
+    const formData = {
+        access_key: "7f9473c5-37b1-422c-be8e-e25f6cd3251b",
+        name: fullName.value,
+        phone: phone.value,
+        email: email.value,
+        country: country.value,
+        service: service.value,
+        personalPic: formUploads.picURL,
+        passport: formUploads.passURL,
+        residency: formUploads.resURL,
+    };
 
-                btn.innerText = "التالي";
-                btn.disabled = false;
-            }
-
-            showStep(currentStep + 1);
-        });
+    let send = await fetch("https://api.web3forms.com/submit", {
+        method:"POST",
+        headers:{ "Content-Type":"application/json" },
+        body: JSON.stringify(formData)
     });
 
-    /* زر السابق */
-    document.querySelectorAll(".prev-btn").forEach((btn) => {
-        btn.addEventListener("click", (e) => {
-            e.preventDefault();
-            showStep(currentStep - 1);
-        });
-    });
-
-});
+    if (send.ok) {
+        alert("تم إرسال الطلب بنجاح 🎉");
+        window.location.href = "index.html";
+    } else {
+        alert("حدث خطأ أثناء الإرسال");
+    }
+};
