@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>تقديم الطلب</title>
+
+<style>
+body { font-family: Arial; background:#111; color:white; padding:20px; }
+.form-step { display:none; }
+.form-step.active { display:block; }
+input, select { width:100%; padding:12px; margin:10px 0; border-radius:6px; border:1px solid #555; }
+button { padding:12px 20px; background:#007bff; border:0; color:white; border-radius:6px; cursor:pointer; width:100%; margin-top:10px; }
+</style>
+
+</head>
+<body>
+
+<h1>تقديم الطلب</h1>
+
+<form id="applyForm">
+
+<!-- STEP 1 -->
+<div class="form-step active" data-step="1">
+<h2>البيانات الشخصية</h2>
+
+<input type="text" id="fullName" placeholder="الاسم الكامل" required />
+<input type="tel" id="phone" placeholder="رقم الهاتف" required />
+<input type="email" id="email" placeholder="البريد الإلكتروني" required />
+
+<select id="country" required>
+<option value="">اختر الدولة</option>
+<option>السعودية</option>
+<option>الإمارات</option>
+<option>قطر</option>
+<option>البحرين</option>
+<option>الكويت</option>
+<option>عُمان</option>
+</select>
+
+<select id="service" required>
+<option value="">اختر الخدمة المطلوبة</option>
+<option>تجهيز ملف الشنغن (199 رس)</option>
+<option>تذكرة إلكترونية لأمريكا (89 رس)</option>
+<option>حجز موعد شنغن (250 - 150 رس)</option>
+<option>حجز موعد أمريكا (899 رس)</option>
+<option>حجوزات الطيران والفنادق (50 رس)</option>
+<option>تجديد الجواز الهندي (69 رس)</option>
+<option>تجديد الجواز الفلبيني (69 رس)</option>
+<option>تجديد الجواز الإندونيسي (69 رس)</option>
+<option>تأشيرة الإمارات (349 رس)</option>
+<option>تأشيرة البحرين (149 رس)</option>
+<option>تأشيرة قطر (99 رس)</option>
+</select>
+
+<button type="button" id="next1">التالي</button>
+</div>
+
+<!-- STEP 2 -->
+<div class="form-step" data-step="2">
+<h2>رفع المستندات</h2>
+
+<label>صورة شخصية*</label>
+<input type="file" id="personalPic" accept="image/*" required />
+
+<label>جواز السفر*</label>
+<input type="file" id="passport" accept="image/*" required />
+
+<label>الإقامة*</label>
+<input type="file" id="residency" accept="image/*" required />
+
+<button type="button" id="back1">رجوع</button>
+<button type="button" id="next2">التالي</button>
+</div>
+
+<!-- STEP 3 -->
+<div class="form-step" data-step="3">
+<h2>مراجعة الطلب</h2>
+
+<div id="reviewBox" style="background:#222; padding:15px; border-radius:8px;"></div>
+
+<button type="button" id="back2">رجوع</button>
+<button type="submit" id="submitBtn">ارسال الطلب</button>
+</div>
+
+</form>
+
+<script src="script.js"></script>
+
+</body>
+</html>
